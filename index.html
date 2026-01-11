@@ -1,0 +1,1513 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LifeQuest - Social Edition</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    
+    <style>
+        :root {
+            --primary-color: #00b894;
+            --secondary-color: #0984e3;
+            --accent-color: #fdcb6e;
+            --danger-color: #ff7675;
+            --purple-color: #6c5ce7;
+            --background: #1e272e;
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --card-border: rgba(255, 255, 255, 0.1);
+            --text-color: #dfe6e9;
+            --text-muted: #b2bec3;
+            --success-gradient: linear-gradient(135deg, #00b894 0%, #00cec9 100%);
+            --level-gradient: linear-gradient(135deg, #6c5ce7 0%, #a29bfe 100%);
+            --exp-gradient: linear-gradient(90deg, #fdcb6e 0%, #ffeaa7 100%);
+            --google-color: #DB4437;
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--background);
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(9, 132, 227, 0.1) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(0, 184, 148, 0.1) 0%, transparent 20%);
+            color: var(--text-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            padding-bottom: 80px;
+        }
+
+        /* --- Header & Profile --- */
+        .header {
+            background: rgba(30, 39, 46, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            margin-bottom: 30px;
+            padding: 25px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: var(--success-gradient);
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        h1 {
+            margin: 0;
+            background: var(--success-gradient);
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: 2.2em;
+            font-weight: 700;
+            letter-spacing: -1px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        h1 i {
+            -webkit-text-fill-color: var(--accent-color);
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        /* --- Profile Section --- */
+        .profile-container {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 15px;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            border: 1px solid var(--card-border);
+            flex-wrap: wrap;
+            position: relative;
+        }
+
+        .profile-avatar {
+            width: 70px;
+            height: 70px;
+            background: var(--level-gradient);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2em;
+            color: white;
+            box-shadow: 0 4px 10px rgba(108, 92, 231, 0.4);
+            flex-shrink: 0;
+            cursor: pointer;
+            transition: transform 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .profile-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .profile-avatar:hover {
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        .profile-info {
+            flex-grow: 1;
+            min-width: 200px;
+        }
+
+        .profile-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 2px;
+        }
+
+        .username-input {
+            background: transparent;
+            border: none;
+            border-bottom: 2px solid transparent;
+            color: white;
+            font-size: 1.3em;
+            font-weight: 700;
+            font-family: inherit;
+            width: 180px;
+            padding: 0;
+            transition: all 0.3s;
+        }
+
+        .username-input:focus {
+            outline: none;
+            border-bottom-color: var(--primary-color);
+        }
+        
+        /* Read only mode for friend view */
+        .username-input[readonly] {
+            border-bottom: none;
+            cursor: default;
+        }
+
+        .level-badge {
+            background: var(--purple-color);
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-size: 0.8em;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            white-space: nowrap;
+        }
+
+        .rank-badge {
+            font-size: 0.9em;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+            display: inline-block;
+            transition: color 0.3s ease;
+        }
+
+        .exp-track {
+            background: rgba(255, 255, 255, 0.1);
+            height: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+            position: relative;
+            margin-top: 5px;
+        }
+
+        .exp-bar {
+            height: 100%;
+            background: var(--exp-gradient);
+            width: 0%;
+            transition: width 0.5s ease-out;
+            box-shadow: 0 0 10px rgba(253, 203, 110, 0.5);
+        }
+
+        .exp-text {
+            font-size: 0.8em;
+            color: var(--text-muted);
+            margin-top: 4px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        /* --- Stats --- */
+        .stats-grid {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            padding: 10px 20px;
+            text-align: center;
+            border: 1px solid var(--card-border);
+            transition: transform 0.2s;
+            flex: 1;
+            min-width: 100px;
+        }
+
+        .stat-value {
+            font-size: 1.5em;
+            font-weight: 700;
+            color: white;
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 0.8em;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* --- Social & Controls --- */
+        .controls-panel {
+            background: rgba(30, 39, 46, 0.6);
+            padding: 15px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr auto;
+            gap: 15px;
+            align-items: center;
+            border: 1px solid var(--card-border);
+        }
+
+        .social-btn {
+            background: linear-gradient(135deg, #0984e3 0%, #74b9ff 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(9, 132, 227, 0.3);
+            font-size: 0.9em;
+        }
+
+        .social-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(9, 132, 227, 0.5);
+        }
+
+        .google-btn {
+            background: white;
+            color: #333;
+        }
+        
+        .google-btn i {
+            color: var(--google-color);
+        }
+
+        .logout-btn {
+            background: rgba(255, 118, 117, 0.2);
+            color: var(--danger-color);
+            box-shadow: none;
+            border: 1px solid var(--danger-color);
+        }
+        
+        .logout-btn:hover {
+            background: var(--danger-color);
+            color: white;
+            box-shadow: 0 4px 15px rgba(255, 118, 117, 0.3);
+        }
+
+        .notification-badge {
+            background: var(--danger-color);
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 0.75em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: 5px;
+        }
+
+        .input-group {
+            position: relative;
+        }
+
+        .input-group i.search-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+        }
+
+        input[type="text"].search-input, select {
+            width: 100%;
+            padding: 12px 15px 12px 40px;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--card-border);
+            border-radius: 10px;
+            color: white;
+            font-family: inherit;
+            font-size: 0.95em;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        select {
+            padding-left: 15px;
+            cursor: pointer;
+        }
+        
+        /* --- Friend Modal --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+            z-index: 3000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+        
+        .modal-overlay.open {
+            opacity: 1;
+            pointer-events: all;
+        }
+        
+        .modal-content {
+            background: var(--background);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 85vh;
+            padding: 25px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            transform: translateY(20px);
+            transition: transform 0.3s;
+            overflow-y: auto;
+        }
+        
+        .modal-overlay.open .modal-content {
+            transform: translateY(0);
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--card-border);
+        }
+        
+        .close-modal {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.5em;
+            cursor: pointer;
+        }
+        
+        .friend-code-section {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .my-code {
+            font-family: monospace;
+            font-size: 1.4em;
+            color: var(--accent-color);
+            background: rgba(0,0,0,0.3);
+            padding: 8px 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            display: inline-block;
+            cursor: pointer;
+            border: 1px dashed var(--card-border);
+        }
+        
+        .add-friend-form {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .friend-input {
+            flex-grow: 1;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid var(--card-border);
+            background: rgba(0,0,0,0.2);
+            color: white;
+        }
+        
+        .btn-add {
+            background: var(--primary-color);
+            border: none;
+            border-radius: 8px;
+            width: 40px;
+            color: white;
+            cursor: pointer;
+        }
+        
+        .friends-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .friend-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255,255,255,0.03);
+            padding: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .friend-item:hover {
+            background: rgba(255,255,255,0.08);
+        }
+        
+        .friend-name {
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .friend-level {
+            background: var(--purple-color);
+            font-size: 0.7em;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+        
+        .request-item {
+            border: 1px solid var(--accent-color);
+            background: rgba(253, 203, 110, 0.1);
+        }
+
+        .req-actions {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .btn-accept, .btn-reject {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+        
+        .btn-accept { background: var(--primary-color); }
+        .btn-reject { background: var(--danger-color); }
+
+        /* --- Grid & Cards --- */
+        .achievements-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+        }
+
+        .achievement-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 25px;
+            position: relative;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .achievement-card:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .achievement-card.completed {
+            background: linear-gradient(145deg, rgba(0, 184, 148, 0.1), rgba(0, 0, 0, 0.2));
+            border-color: var(--primary-color);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+
+        .emoji-icon {
+            font-size: 3em;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));
+            transition: transform 0.3s;
+        }
+
+        .achievement-card:hover .emoji-icon {
+            transform: rotate(10deg) scale(1.1);
+        }
+
+        .check-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid var(--card-border);
+            background: transparent;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: transparent;
+            transition: all 0.3s;
+            font-size: 1.2em;
+        }
+        
+        /* Read only class for friends view */
+        .check-btn.readonly {
+            cursor: default;
+            opacity: 0.5;
+        }
+
+        .check-btn:not(.readonly):hover {
+            border-color: var(--primary-color);
+            background: rgba(0, 184, 148, 0.1);
+        }
+
+        .achievement-card.completed .check-btn {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+            color: white;
+            transform: scale(1.1);
+            box-shadow: 0 0 15px var(--primary-color);
+        }
+        
+        .achievement-card.completed .check-btn.readonly {
+            opacity: 1;
+            box-shadow: none;
+        }
+
+        .card-title {
+            font-weight: 700;
+            font-size: 1.1em;
+            margin-bottom: 8px;
+            line-height: 1.3;
+        }
+
+        .card-desc {
+            font-size: 0.9em;
+            color: var(--text-muted);
+            margin-bottom: 20px;
+            flex-grow: 1;
+        }
+
+        .card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: auto;
+        }
+
+        .badge-category {
+            font-size: 0.75em;
+            padding: 4px 12px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-muted);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .achievement-card.completed .badge-category {
+            background: rgba(0, 184, 148, 0.2);
+            color: var(--primary-color);
+        }
+
+        /* --- Progress Bar --- */
+        .progress-wrapper {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 6px;
+            background: #2d3436;
+            z-index: 1000;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--success-gradient);
+            width: 0%;
+            transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 0 10px var(--primary-color);
+            position: relative;
+        }
+
+        /* --- Toast Notification --- */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: rgba(45, 52, 54, 0.95);
+            backdrop-filter: blur(10px);
+            border-left: 5px solid var(--primary-color);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            z-index: 2000;
+        }
+
+        .toast.levelup {
+            border-left-color: var(--purple-color);
+            background: linear-gradient(135deg, rgba(45, 52, 54, 0.95) 0%, rgba(108, 92, 231, 0.2) 100%);
+        }
+
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        
+        /* Banner indicating friend view */
+        .view-banner {
+            background: var(--accent-color);
+            color: #2d3436;
+            text-align: center;
+            padding: 8px;
+            font-weight: bold;
+            display: none;
+            cursor: pointer;
+        }
+        .view-banner:hover {
+            text-decoration: underline;
+        }
+
+        /* --- Responsive --- */
+        @media (max-width: 768px) {
+            .controls-panel {
+                grid-template-columns: 1fr 1fr;
+            }
+            .search-container {
+                grid-column: 1 / -1;
+            }
+            .header-top {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .stats-grid {
+                width: 100%;
+                justify-content: space-between;
+            }
+            .profile-container {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .profile-avatar {
+                margin-bottom: 10px;
+            }
+            .profile-info {
+                width: 100%;
+            }
+            .social-btn span {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    
+    <div id="view-banner" class="view-banner">
+        Stai guardando il profilo di <span id="view-friend-name">Amico</span>. Clicca qui per tornare al tuo.
+    </div>
+
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-top">
+                <h1>
+                    <i class="fas fa-trophy"></i> LifeQuest
+                </h1>
+                
+                <div class="header-actions">
+                    <!-- Login Btn (Visible if Anonymous) -->
+                    <button class="social-btn google-btn" id="login-btn" style="display:none">
+                        <i class="fab fa-google"></i> <span>Salva progressi</span>
+                    </button>
+                    
+                    <!-- Logout Btn (Visible if Logged In) -->
+                    <button class="social-btn logout-btn" id="logout-btn" style="display:none">
+                        <i class="fas fa-sign-out-alt"></i> <span>Esci</span>
+                    </button>
+                    
+                    <button class="social-btn" id="social-btn">
+                        <i class="fas fa-users"></i>
+                        <span>Amici</span>
+                        <div class="notification-badge" id="req-badge" style="display:none">0</div>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Profile Section -->
+            <div class="profile-container">
+                <div class="profile-avatar" id="profile-avatar">
+                    <i class="fas fa-user-astronaut"></i>
+                    <!-- Img injected via JS if logged in -->
+                </div>
+                <div class="profile-info">
+                    <div class="profile-header">
+                        <input type="text" id="username" class="username-input" placeholder="Il tuo nome..." maxlength="20" autocomplete="off">
+                        <span class="level-badge">Lv. <span id="level-val">1</span></span>
+                    </div>
+                    
+                    <div class="rank-badge" id="rank-badge">Neonato</div>
+
+                    <div class="exp-track">
+                        <div class="exp-bar" id="exp-bar"></div>
+                    </div>
+                    <div class="exp-text">
+                        <span>EXP</span>
+                        <span><span id="current-exp">0</span> / <span id="next-level-exp">200</span></span>
+                    </div>
+                </div>
+                
+                <!-- Compact Stats for Header -->
+                <div class="stats-grid" style="flex-grow: 1; justify-content: flex-end;">
+                    <div class="stat-card">
+                        <span class="stat-value" id="completed-count">0</span>
+                        <span class="stat-label">Fatti</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-value" id="total-count">0</span>
+                        <span class="stat-label">Totali</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Controls -->
+        <nav class="controls-panel">
+            <div class="input-group search-container">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" class="search-input" id="search" placeholder="Cerca tra le imprese...">
+            </div>
+            
+            <div class="input-group">
+                <select id="category-filter">
+                    <option value="all">Tutte le Categorie</option>
+                </select>
+            </div>
+
+            <div class="input-group">
+                <select id="status-filter">
+                    <option value="all">Tutti gli Stati</option>
+                    <option value="completed">Completati</option>
+                    <option value="todo">Da Fare</option>
+                </select>
+            </div>
+        </nav>
+
+        <!-- Main Grid -->
+        <main class="achievements-grid" id="achievements-grid">
+            <!-- Cards injected via JS -->
+        </main>
+    </div>
+
+    <!-- Sticky Progress Bar -->
+    <div class="progress-wrapper">
+        <div class="progress-fill" id="progress-bar"></div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast">
+        <i class="fas fa-check-circle" id="toast-icon"></i>
+        <div>
+            <div style="font-weight: bold; margin-bottom: 2px;" id="toast-title">Achievement Sbloccato!</div>
+            <div id="toast-message" style="font-size: 0.9em; opacity: 0.8;">Hai fatto qualcosa di grande.</div>
+        </div>
+    </div>
+    
+    <!-- Friend Modal -->
+    <div class="modal-overlay" id="friends-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 style="margin:0"><i class="fas fa-user-friends"></i> Social Hub</h2>
+                <button class="close-modal" id="close-modal">&times;</button>
+            </div>
+            
+            <div class="friend-code-section">
+                <div style="font-size:0.9em; color:var(--text-muted); margin-bottom:5px;">Il tuo Codice Amico</div>
+                <div class="my-code" id="my-code" title="Clicca per copiare">CARICAMENTO...</div>
+                <div style="font-size:0.8em; opacity:0.6;">Clicca per copiare e invia ai tuoi amici!</div>
+            </div>
+            
+            <div>
+                <h3>Aggiungi Amico</h3>
+                <form class="add-friend-form" id="add-friend-form">
+                    <input type="text" class="friend-input" id="friend-code-input" placeholder="Incolla codice amico qui..." required>
+                    <button type="submit" class="btn-add"><i class="fas fa-plus"></i></button>
+                </form>
+            </div>
+            
+            <div id="requests-section" style="display:none;">
+                <h3>Richieste in attesa</h3>
+                <div class="friends-list" id="requests-list"></div>
+            </div>
+            
+            <div>
+                <h3>I tuoi Amici</h3>
+                <div class="friends-list" id="friends-list">
+                    <div style="padding:10px; text-align:center; color:var(--text-muted);">Nessun amico ancora :(</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
+        import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
+        import { getFirestore, doc, setDoc, getDoc, collection, onSnapshot, addDoc, deleteDoc, updateDoc, serverTimestamp, query, where, getDocs } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
+
+        // --- Configuration ---
+        const XP_PER_ACHIEVEMENT = 50;
+        const XP_PER_LEVEL = 200;
+        
+        const RANKS = [
+            { minLevel: 1, title: "Neonato", color: "#dfe6e9" },
+            { minLevel: 2, title: "Principiante", color: "#00b894" },
+            { minLevel: 5, title: "Apprendista", color: "#0984e3" },
+            { minLevel: 10, title: "Esploratore", color: "#6c5ce7" },
+            { minLevel: 15, title: "Veterano", color: "#fdcb6e" },
+            { minLevel: 20, title: "Leggenda", color: "#e17055" },
+            { minLevel: 30, title: "Divinità", color: "#d63031" }
+        ];
+
+        // --- Data ---
+        const achievementsData = [
+            // Infanzia
+            { id: 1, title: "Fatto la pipì a letto", emoji: "💦", description: "Incidente notturno memorabile", category: "Umiliante" },
+            { id: 2, title: "Primo giorno di scuola", emoji: "🎒", description: "Superato il primo giorno di scuola", category: "Infanzia" },
+            { id: 3, title: "Perso il primo dente", emoji: "🦷", description: "Il topolino dei denti è passato", category: "Infanzia" },
+            { id: 4, title: "Prima bugia a un adulto", emoji: "🤥", description: "Hai detto che il cane ha mangiato i compiti", category: "Infanzia" },
+
+            // Scuola
+            { id: 5, title: "Primo 10 in pagella", emoji: "🏆", description: "Brillante risultato scolastico", category: "Scuola" },
+            { id: 6, title: "Bocciato un esame", emoji: "😭", description: "Non tutte le ciambelle escono col buco", category: "Scuola" },
+            { id: 7, title: "Dimenticato i compiti a casa", emoji: "🧠", description: "La scusa più usata nella storia", category: "Scuola" },
+            { id: 29, title: "Addormentato durante una lezione", emoji: "💤", description: "Eri così concentrato da chiudere gli occhi", category: "Scuola" },
+            { id: 76, title: "Copiato dal compagno sbagliato", emoji: "👀", description: "Dovevate studiare entrambi invece...", category: "Scuola" },
+
+            // Vita sociale
+            { id: 8, title: "Primo bacio", emoji: "💋", description: "Bacio che non dimenticherai mai", category: "Sociale" },
+            { id: 9, title: "Amico immaginario", emoji: "👻", description: "Avevi un amico che solo tu potevi vedere", category: "Sociale" },
+            { id: 10, title: "Fatto ridere tutta la classe", emoji: "😂", description: "Sei stato il pagliaccio della situazione", category: "Sociale" },
+            { id: 85, title: "Chiamato la persona sbagliata", emoji: "👥", description: "Doppio imbarazzo con il nome giusto", category: "Sociale" },
+            { id: 92, title: "Hai flirtato con qualcuno", emoji: "😏", description: "A FANTASTICA!", category: "Sociale" },
+
+            // Cibo
+            { id: 11, title: "Mangiato pizza a colazione", emoji: "🍕", description: "Perché no? È praticamente una torta salata", category: "Cibo" },
+            { id: 12, title: "Bruciato l'acqua", emoji: "🔥", description: "Talmente distratto da far evaporare tutta l'acqua", category: "Cibo" },
+            { id: 13, title: "Ordinato cibo e addormentato", emoji: "🛌", description: "Il rider ha bussato invano", category: "Cibo" },
+            { id: 122, title: "Mangiato cibo scaduto", emoji: "📅", description: "La data è solo un'indicazione... giusto?", category: "Cibo" },
+
+            // Tecnologia
+            { id: 14, title: "Dimenticato la password", emoji: "🔑", description: "Ancora una volta...", category: "Tecnologia" },
+            { id: 15, title: "Inviato messaggio sbagliato", emoji: "📱", description: "Quel 'ti amo' era per la mamma, promesso!", category: "Tecnologia" },
+            { id: 16, title: "Caduto mentre guardavi il telefono", emoji: "🤳", description: "Il marciapiede era irregolare, giuro!", category: "Tecnologia" },
+            { id: 70, title: "Chiamato qualcuno per sbaglio", emoji: "📞", description: "Panico da tasca premuta", category: "Tecnologia" },
+
+            // Viaggi
+            { id: 17, title: "Perso l'aereo/treno", emoji: "✈️", description: "Correre non è servito a nulla", category: "Viaggi" },
+            { id: 18, title: "Dormito in aeroporto", emoji: "😴", description: "Letto scomodo ma avventuroso", category: "Viaggi" },
+            { id: 19, title: "Visitato 3 paesi diversi", emoji: "🌎", description: "Esploratore in erba", category: "Viaggi" },
+            { id: 112, title: "Mangiato cibo strano per sbaglio", emoji: "🍖", description: "Era cavallo? Maiale? Chiediamolo dopo", category: "Viaggi" },
+
+            // Adulting
+            { id: 20, title: "Prima bolletta pagata", emoji: "💸", description: "Benvenuto nell'età adulta", category: "Adulting" },
+            { id: 21, title: "Dimenticato compleanno", emoji: "🎂", description: "Meglio tardi che mai... vero?", category: "Adulting" },
+            { id: 22, title: "Fatto la lavatrice", emoji: "🧦", description: "Efficienza", category: "Adulting" },
+
+            // Estremi
+            { id: 23, title: "Salto con il paracadute", emoji: "🪂", description: "Volare senza ali", category: "Estremo" },
+            { id: 24, title: "Mangiato cibo piccantissimo", emoji: "🌶️", description: "Perché l'ho fatto?", category: "Estremo" },
+
+            // Casual
+            { id: 26, title: "Camminato contro un vetro pulito", emoji: "🪟", description: "Poteva succedere a chiunque... vero?", category: "Casual" },
+            { id: 27, title: "Caduto dalle scale", emoji: "📉", description: "Discesa più veloce del previsto", category: "Casual" },
+            { id: 33, title: "Rotto un osso", emoji: "🦴", description: "Sei durato poco", category: "Salute" },
+            { id: 36, title: "Vomitato addosso a qualcuno", emoji: "🤮", description: "Colpito e affondato.", category: "Salute" },
+            { id: 37, title: "Ubriacarti e vuoto di memoria", emoji: "🍾", description: "StO bEnE, gIuRo!", category: "Salute" },
+        ];
+
+        // --- Firebase Init ---
+        const firebaseConfig = JSON.parse(__firebase_config);
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'lifequest-default';
+
+        class LifeQuestApp {
+            constructor() {
+                this.user = null;
+                this.unsubscribeProfile = null; // Store listener cleanup
+                this.isViewingFriend = false;
+                this.friendData = null;
+                this.state = {
+                    achievements: [],
+                    username: '',
+                    filters: { search: '', category: 'all', status: 'all' }
+                };
+                
+                this.dom = {
+                    grid: document.getElementById('achievements-grid'),
+                    completedCount: document.getElementById('completed-count'),
+                    totalCount: document.getElementById('total-count'),
+                    progressBar: document.getElementById('progress-bar'),
+                    username: document.getElementById('username'),
+                    levelVal: document.getElementById('level-val'),
+                    currentExp: document.getElementById('current-exp'),
+                    nextLevelExp: document.getElementById('next-level-exp'),
+                    expBar: document.getElementById('exp-bar'),
+                    rankBadge: document.getElementById('rank-badge'),
+                    search: document.getElementById('search'),
+                    categoryFilter: document.getElementById('category-filter'),
+                    statusFilter: document.getElementById('status-filter'),
+                    toast: document.getElementById('toast'),
+                    toastTitle: document.getElementById('toast-title'),
+                    toastMsg: document.getElementById('toast-message'),
+                    toastIcon: document.getElementById('toast-icon'),
+                    // Social
+                    socialBtn: document.getElementById('social-btn'),
+                    loginBtn: document.getElementById('login-btn'),
+                    logoutBtn: document.getElementById('logout-btn'),
+                    profileAvatar: document.getElementById('profile-avatar'),
+                    friendsModal: document.getElementById('friends-modal'),
+                    closeModal: document.getElementById('close-modal'),
+                    myCode: document.getElementById('my-code'),
+                    addFriendForm: document.getElementById('add-friend-form'),
+                    friendInput: document.getElementById('friend-code-input'),
+                    friendsList: document.getElementById('friends-list'),
+                    requestsList: document.getElementById('requests-list'),
+                    requestsSection: document.getElementById('requests-section'),
+                    reqBadge: document.getElementById('req-badge'),
+                    viewBanner: document.getElementById('view-banner'),
+                    viewFriendName: document.getElementById('view-friend-name')
+                };
+
+                this.init();
+            }
+
+            async init() {
+                // Auth Logic
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    // Only sign in anonymously if we aren't already signed in (persistence)
+                    // But onAuthStateChanged handles the initial state too
+                    // We wait for onAuthStateChanged to fire first
+                }
+                
+                // Fallback if no user is detected after a brief moment (e.g. first load)
+                setTimeout(() => {
+                    if (!auth.currentUser) signInAnonymously(auth);
+                }, 1000);
+
+                onAuthStateChanged(auth, (user) => {
+                    if (user) {
+                        this.user = user;
+                        this.handleAuthUI(user);
+                        this.dom.myCode.textContent = user.uid; 
+                        this.setupRealtimeListeners();
+                        this.setupSocialListeners();
+                    } else {
+                        // Signed out
+                        this.user = null;
+                        this.dom.loginBtn.style.display = 'flex';
+                        this.dom.logoutBtn.style.display = 'none';
+                        // Reset UI
+                        this.state.achievements = achievementsData.map(item => ({ ...item, completed: false }));
+                        this.render();
+                        this.updateStats(false);
+                    }
+                });
+
+                this.populateCategories();
+                this.setupUIListeners();
+            }
+            
+            handleAuthUI(user) {
+                if (user.isAnonymous) {
+                    this.dom.loginBtn.style.display = 'flex';
+                    this.dom.logoutBtn.style.display = 'none';
+                    this.dom.profileAvatar.innerHTML = '<i class="fas fa-user-astronaut"></i>';
+                } else {
+                    this.dom.loginBtn.style.display = 'none';
+                    this.dom.logoutBtn.style.display = 'flex';
+                    // Show Google Photo if available
+                    if (user.photoURL) {
+                        this.dom.profileAvatar.innerHTML = `<img src="${user.photoURL}" alt="Profile">`;
+                    }
+                }
+            }
+
+            // --- Database Sync ---
+            
+            setupRealtimeListeners() {
+                if (!this.user) return;
+                
+                // Cleanup previous listener if exists (e.g. after logout/login switch)
+                if (this.unsubscribeProfile) this.unsubscribeProfile();
+
+                // Listen to My Profile
+                const profileRef = doc(db, 'artifacts', appId, 'public', 'data', 'profiles', this.user.uid);
+                
+                this.unsubscribeProfile = onSnapshot(profileRef, (docSnap) => {
+                    if (this.isViewingFriend) return; 
+                    
+                    if (docSnap.exists()) {
+                        const data = docSnap.data();
+                        this.state.username = data.username || (this.user.displayName || 'Viaggiatore');
+                        this.state.achievements = achievementsData.map(item => ({
+                            ...item,
+                            completed: !!(data.achievements && data.achievements[item.id]),
+                            completedAt: data.achievements ? data.achievements[item.id] : null
+                        }));
+                    } else {
+                        // New user logic
+                        this.state.username = this.user.displayName || '';
+                        this.state.achievements = achievementsData.map(item => ({ ...item, completed: false }));
+                        
+                        // Try migrate ONLY if anonymous
+                        if(this.user.isAnonymous) {
+                            const local = JSON.parse(localStorage.getItem('lifeQuestProgress') || '{}');
+                            const localProfile = JSON.parse(localStorage.getItem('lifeQuestProfile') || '{}');
+                            if (Object.keys(local).length > 0) {
+                                this.state.achievements.forEach(a => {
+                                    if (local[a.id]) a.completed = true;
+                                });
+                                this.state.username = localProfile.username || '';
+                                this.saveToCloud();
+                            }
+                        }
+                    }
+                    this.render();
+                    this.updateStats(false);
+                });
+            }
+
+            saveToCloud() {
+                if (!this.user || this.isViewingFriend) return;
+                
+                const stats = this.calculateStats(this.state.achievements);
+                const achievementsMap = {};
+                this.state.achievements.forEach(a => {
+                    if (a.completed) achievementsMap[a.id] = a.completedAt || Date.now();
+                });
+
+                const profileRef = doc(db, 'artifacts', appId, 'public', 'data', 'profiles', this.user.uid);
+                
+                setDoc(profileRef, {
+                    username: this.state.username,
+                    level: stats.level,
+                    exp: stats.currentLevelExp,
+                    achievements: achievementsMap,
+                    totalAchievements: stats.completed,
+                    lastActive: serverTimestamp()
+                }, { merge: true });
+            }
+
+            // --- Logic ---
+
+            populateCategories() {
+                const categories = [...new Set(achievementsData.map(a => a.category))].sort();
+                categories.forEach(cat => {
+                    const option = document.createElement('option');
+                    option.value = cat;
+                    option.textContent = cat;
+                    this.dom.categoryFilter.appendChild(option);
+                });
+            }
+
+            calculateStats(achievementList) {
+                const total = achievementList.length;
+                const completed = achievementList.filter(a => a.completed).length;
+                const totalExp = completed * XP_PER_ACHIEVEMENT;
+                const level = Math.floor(totalExp / XP_PER_LEVEL) + 1;
+                const currentLevelExp = totalExp % XP_PER_LEVEL;
+                return { total, completed, totalExp, level, currentLevelExp };
+            }
+            
+            getRank(level) {
+                return RANKS.slice().reverse().find(r => level >= r.minLevel) || RANKS[0];
+            }
+
+            updateStats(animate = true) {
+                const list = this.isViewingFriend ? this.friendData.achievements : this.state.achievements;
+                const currentLevelText = parseInt(this.dom.levelVal.textContent) || 1;
+                const stats = this.calculateStats(list);
+                const percentage = stats.total === 0 ? 0 : Math.round((stats.completed / stats.total) * 100);
+                const rank = this.getRank(stats.level);
+
+                this.dom.completedCount.textContent = stats.completed;
+                this.dom.totalCount.textContent = stats.total;
+                this.dom.progressBar.style.width = `${percentage}%`;
+                this.dom.levelVal.textContent = stats.level;
+                this.dom.currentExp.textContent = stats.currentLevelExp;
+                this.dom.nextLevelExp.textContent = XP_PER_LEVEL;
+                this.dom.rankBadge.textContent = rank.title;
+                this.dom.rankBadge.style.color = rank.color;
+                
+                if(this.isViewingFriend) {
+                     this.dom.username.value = this.friendData.username;
+                     this.dom.username.setAttribute('readonly', 'true');
+                } else {
+                     this.dom.username.value = this.state.username;
+                     this.dom.username.removeAttribute('readonly');
+                }
+                
+                const expPerc = (stats.currentLevelExp / XP_PER_LEVEL) * 100;
+                this.dom.expBar.style.width = `${expPerc}%`;
+
+                if (!this.isViewingFriend && animate && stats.level > currentLevelText) {
+                    this.triggerLevelUp(stats.level);
+                }
+            }
+
+            toggleAchievement(id) {
+                if (this.isViewingFriend) return; 
+
+                const item = this.state.achievements.find(a => a.id === id);
+                if (!item) return;
+
+                item.completed = !item.completed;
+                item.completedAt = item.completed ? Date.now() : null;
+                
+                this.saveToCloud(); 
+                
+                if (item.completed) {
+                    this.showToast(item.title);
+                    const card = document.querySelector(`.achievement-card[data-id="${id}"]`);
+                    if(card) this.triggerConfetti(card);
+                }
+            }
+
+            render() {
+                const list = this.isViewingFriend ? this.friendData.achievements : this.state.achievements;
+                const searchQuery = this.state.filters.search;
+                
+                this.dom.grid.innerHTML = '';
+                
+                const filtered = list.filter(item => {
+                    const matchSearch = item.title.toLowerCase().includes(searchQuery) || 
+                                      item.description.toLowerCase().includes(searchQuery);
+                    const matchCategory = this.state.filters.category === 'all' || item.category === this.state.filters.category;
+                    
+                    let matchStatus = true;
+                    if (this.state.filters.status === 'completed') matchStatus = item.completed;
+                    if (this.state.filters.status === 'todo') matchStatus = !item.completed;
+
+                    return matchSearch && matchCategory && matchStatus;
+                });
+
+                filtered.forEach(item => {
+                    const card = document.createElement('div');
+                    card.className = `achievement-card ${item.completed ? 'completed' : ''}`;
+                    card.dataset.id = item.id;
+                    const btnClass = this.isViewingFriend ? 'check-btn readonly' : 'check-btn';
+                    
+                    card.innerHTML = `
+                        <div class="card-header">
+                            <div class="emoji-icon">${item.emoji}</div>
+                            <button class="${btnClass}">
+                                <i class="fas fa-check"></i>
+                            </button>
+                        </div>
+                        <div class="card-title">${item.title}</div>
+                        <div class="card-desc">${item.description}</div>
+                        <div class="card-footer">
+                            <span class="badge-category">${item.category}</span>
+                        </div>
+                    `;
+
+                    if (!this.isViewingFriend) {
+                        card.addEventListener('click', () => this.toggleAchievement(item.id));
+                    }
+                    this.dom.grid.appendChild(card);
+                });
+            }
+
+            // --- Social System ---
+
+            setupSocialListeners() {
+                const friendsRef = collection(db, 'artifacts', appId, 'users', this.user.uid, 'friends');
+                onSnapshot(friendsRef, (snapshot) => {
+                    this.dom.friendsList.innerHTML = '';
+                    if (snapshot.empty) {
+                        this.dom.friendsList.innerHTML = '<div style="padding:10px; text-align:center; color:var(--text-muted);">Nessun amico ancora :(</div>';
+                        return;
+                    }
+
+                    snapshot.forEach(doc => {
+                        const fData = doc.data();
+                        const el = document.createElement('div');
+                        el.className = 'friend-item';
+                        el.innerHTML = `
+                            <div class="friend-name">
+                                <i class="fas fa-user-circle"></i>
+                                ${fData.username || 'Utente'}
+                                <span class="friend-level">Lv. ${fData.level || '?'}</span>
+                            </div>
+                            <i class="fas fa-chevron-right" style="font-size:0.8em; opacity:0.5"></i>
+                        `;
+                        el.addEventListener('click', () => this.loadFriendProfile(doc.id, fData.username));
+                        this.dom.friendsList.appendChild(el);
+                    });
+                });
+
+                const requestsRef = collection(db, 'artifacts', appId, 'public', 'data', 'requests');
+                const q = query(requestsRef, where("to", "==", this.user.uid));
+                
+                onSnapshot(q, (snapshot) => {
+                    this.dom.requestsList.innerHTML = '';
+                    const count = snapshot.size;
+                    
+                    if (count > 0) {
+                        this.dom.reqBadge.textContent = count;
+                        this.dom.reqBadge.style.display = 'flex';
+                        this.dom.requestsSection.style.display = 'block';
+                        
+                        snapshot.forEach(doc => {
+                            const req = doc.data();
+                            const el = document.createElement('div');
+                            el.className = 'friend-item request-item';
+                            el.innerHTML = `
+                                <div class="friend-name">
+                                    <i class="fas fa-envelope"></i>
+                                    Da: ${req.fromName || 'Sconosciuto'}
+                                </div>
+                                <div class="req-actions">
+                                    <button class="btn-accept"><i class="fas fa-check"></i></button>
+                                    <button class="btn-reject"><i class="fas fa-times"></i></button>
+                                </div>
+                            `;
+                            el.querySelector('.btn-accept').addEventListener('click', () => this.acceptRequest(doc.id, req));
+                            el.querySelector('.btn-reject').addEventListener('click', () => deleteDoc(doc.ref));
+                            this.dom.requestsList.appendChild(el);
+                        });
+                    } else {
+                        this.dom.reqBadge.style.display = 'none';
+                        this.dom.requestsSection.style.display = 'none';
+                    }
+                });
+            }
+
+            async sendFriendRequest(targetUid) {
+                if (targetUid === this.user.uid) return alert("Non puoi aggiungerti da solo!");
+                const targetRef = doc(db, 'artifacts', appId, 'public', 'data', 'profiles', targetUid);
+                const targetSnap = await getDoc(targetRef);
+                
+                if (!targetSnap.exists()) {
+                    alert("Utente non trovato! Controlla il codice.");
+                    return;
+                }
+                const requestsRef = collection(db, 'artifacts', appId, 'public', 'data', 'requests');
+                await addDoc(requestsRef, {
+                    from: this.user.uid,
+                    to: targetUid,
+                    fromName: this.state.username || 'Anonimo',
+                    createdAt: serverTimestamp()
+                });
+                alert("Richiesta inviata!");
+                this.dom.friendInput.value = '';
+            }
+
+            async acceptRequest(reqId, reqData) {
+                const myFriendRef = doc(db, 'artifacts', appId, 'users', this.user.uid, 'friends', reqData.from);
+                const senderProfileRef = doc(db, 'artifacts', appId, 'public', 'data', 'profiles', reqData.from);
+                const senderSnap = await getDoc(senderProfileRef);
+                const senderData = senderSnap.exists() ? senderSnap.data() : { username: reqData.fromName, level: 1 };
+
+                await setDoc(myFriendRef, {
+                    username: senderData.username,
+                    level: senderData.level,
+                    addedAt: serverTimestamp()
+                });
+                
+                try {
+                     const theirFriendRef = doc(db, 'artifacts', appId, 'users', reqData.from, 'friends', this.user.uid);
+                     await setDoc(theirFriendRef, {
+                         username: this.state.username,
+                         level: this.calculateStats(this.state.achievements).level,
+                         addedAt: serverTimestamp()
+                     });
+                } catch (e) { console.log("Mirror friend add failed"); }
+
+                await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'requests', reqId));
+                this.showToast("Amico aggiunto!", "success");
+            }
+
+            async loadFriendProfile(friendUid, friendName) {
+                const ref = doc(db, 'artifacts', appId, 'public', 'data', 'profiles', friendUid);
+                const snap = await getDoc(ref);
+                
+                if (snap.exists()) {
+                    const data = snap.data();
+                    this.friendData = {
+                        username: data.username || friendName,
+                        achievements: achievementsData.map(item => ({
+                            ...item,
+                            completed: !!(data.achievements && data.achievements[item.id]),
+                            completedAt: data.achievements ? data.achievements[item.id] : null
+                        }))
+                    };
+                    this.isViewingFriend = true;
+                    this.dom.friendsModal.classList.remove('open');
+                    this.dom.viewBanner.style.display = 'block';
+                    this.dom.viewFriendName.textContent = this.friendData.username;
+                    this.updateStats(false);
+                    this.render();
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+            }
+            
+            restoreMyView() {
+                this.isViewingFriend = false;
+                this.friendData = null;
+                this.dom.viewBanner.style.display = 'none';
+                this.updateStats(false);
+                this.render();
+            }
+
+            // --- UI Helpers ---
+
+            setupUIListeners() {
+                this.dom.search.addEventListener('input', (e) => {
+                    this.state.filters.search = e.target.value.toLowerCase();
+                    this.render();
+                });
+                this.dom.categoryFilter.addEventListener('change', (e) => {
+                    this.state.filters.category = e.target.value;
+                    this.render();
+                });
+                this.dom.statusFilter.addEventListener('change', (e) => {
+                    this.state.filters.status = e.target.value;
+                    this.render();
+                });
+                this.dom.username.addEventListener('input', (e) => {
+                    if(!this.isViewingFriend) {
+                        this.state.username = e.target.value;
+                        clearTimeout(this.saveTimeout);
+                        this.saveTimeout = setTimeout(() => this.saveToCloud(), 1000);
+                    }
+                });
+                this.dom.socialBtn.addEventListener('click', () => this.dom.friendsModal.classList.add('open'));
+                this.dom.closeModal.addEventListener('click', () => this.dom.friendsModal.classList.remove('open'));
+                this.dom.myCode.addEventListener('click', () => {
+                    if (this.user) {
+                        navigator.clipboard.writeText(this.user.uid).then(() => {
+                            const original = this.dom.myCode.textContent;
+                            this.dom.myCode.textContent = "COPIATO!";
+                            setTimeout(() => this.dom.myCode.textContent = original, 1500);
+                        });
+                    }
+                });
+                this.dom.addFriendForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.sendFriendRequest(this.dom.friendInput.value.trim());
+                });
+                this.dom.viewBanner.addEventListener('click', () => this.restoreMyView());
+                
+                // Login Listeners
+                this.dom.loginBtn.addEventListener('click', () => {
+                    const provider = new GoogleAuthProvider();
+                    signInWithPopup(auth, provider).catch(error => {
+                        console.error("Login failed", error);
+                        alert("Login fallito. In questa anteprima il popup potrebbe essere bloccato.");
+                    });
+                });
+                
+                this.dom.logoutBtn.addEventListener('click', () => {
+                   if(confirm("Vuoi uscire?")) {
+                       signOut(auth);
+                   }
+                });
+            }
+
+            triggerLevelUp(newLevel) {
+                const rank = this.getRank(newLevel);
+                const duration = 3000;
+                const end = Date.now() + duration;
+
+                (function frame() {
+                    confetti({ particleCount: 5, angle: 60, spread: 55, origin: { x: 0 }, colors: ['#6c5ce7', '#a29bfe'] });
+                    confetti({ particleCount: 5, angle: 120, spread: 55, origin: { x: 1 }, colors: ['#6c5ce7', '#a29bfe'] });
+                    if (Date.now() < end) requestAnimationFrame(frame);
+                }());
+                this.showToast(`Sei salito al Livello ${newLevel}! (${rank.title})`, 'levelup');
+            }
+
+            triggerConfetti(element) {
+                const rect = element.getBoundingClientRect();
+                const x = (rect.left + rect.width / 2) / window.innerWidth;
+                const y = (rect.top + rect.height / 2) / window.innerHeight;
+                confetti({ particleCount: 60, spread: 60, origin: { x, y }, disableForReducedMotion: true });
+            }
+
+            showToast(msg, type = 'success') {
+                this.dom.toast.className = 'toast';
+                if (type === 'levelup') {
+                    this.dom.toast.classList.add('levelup');
+                    this.dom.toastIcon.className = 'fas fa-rocket';
+                    this.dom.toastTitle.textContent = 'LEVEL UP!';
+                    this.dom.toastMsg.textContent = msg;
+                } else {
+                    this.dom.toastIcon.className = 'fas fa-check-circle';
+                    this.dom.toastTitle.textContent = 'Achievement Sbloccato!';
+                    this.dom.toastMsg.textContent = `Hai completato: ${msg}`;
+                }
+                this.dom.toast.classList.add('show');
+                setTimeout(() => this.dom.toast.classList.remove('show'), 3500);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            window.app = new LifeQuestApp();
+        });
+    </script>
+</body>
+</html>
